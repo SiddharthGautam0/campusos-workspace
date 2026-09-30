@@ -125,9 +125,9 @@ function ClassesAdmin() {
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sectionId) return toast.error("Choose a section");
+    if (!sectionId) return void toast.error("Choose a section");
     const { error } = await supabase.from("classes").insert({ section_id: sectionId, name, code: code.toUpperCase(), description: desc });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setName(""); setCode(""); setDesc(""); toast.success("Class created"); qc.invalidateQueries();
   };
   const assign = async (id: string, teacher: string) => {
@@ -217,7 +217,7 @@ function Audit() {
       return (data ?? []).map((l) => ({ ...l, actor: l.actor_id ? names.get(l.actor_id) ?? "Unknown" : "System" }));
     },
   });
-  const label = (d: unknown) => { const o = d as Record<string, unknown>; return String(o.name ?? o.label ?? o.code ?? o.role ?? ""); };
+  const label = (d: unknown) => { const o = d as Record<string, unknown>; return String(o["name"] ?? o["label"] ?? o["code"] ?? o["role"] ?? ""); };
   return (
     <div className="divide-y rounded-2xl border bg-card">
       {logs.data?.map((l) => (

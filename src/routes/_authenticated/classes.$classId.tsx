@@ -152,7 +152,7 @@ function Subjects({ classId, canManage }: { classId: string; canManage: boolean 
   const refresh = () => qc.invalidateQueries({ queryKey: ["units", classId] });
   const addUnit = async () => {
     const { error } = await supabase.from("units").insert({ class_id: classId, title, position: (units.data?.length ?? 0) + 1 });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setTitle(""); refresh();
   };
   const delUnit = async (id: string) => { await supabase.from("units").delete().eq("id", id); refresh(); };
@@ -200,7 +200,7 @@ function AddItem({ unitId, onDone }: { unitId: string; onDone: () => void }) {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from("unit_items").insert({ unit_id: unitId, kind, title, body, url: kind === "link" ? url : null });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setTitle(""); setBody(""); setUrl(""); setOpen(false); onDone();
   };
   return (
@@ -223,7 +223,7 @@ function AddItem({ unitId, onDone }: { unitId: string; onDone: () => void }) {
   );
 }
 
-function People({ classId, teacher, canManage }: { classId: string; teacher?: string; canManage: boolean }) {
+function People({ classId, teacher, canManage }: { classId: string; teacher?: string | undefined; canManage: boolean }) {
   const qc = useQueryClient();
   const members = useQuery({
     queryKey: ["members", classId],
@@ -231,7 +231,7 @@ function People({ classId, teacher, canManage }: { classId: string; teacher?: st
   });
   const remove = async (uid: string) => {
     const { error } = await supabase.from("class_members").delete().eq("class_id", classId).eq("user_id", uid);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success("Member removed"); qc.invalidateQueries({ queryKey: ["members", classId] });
   };
   return (
@@ -269,20 +269,20 @@ function Files({ classId, isAdmin, userId }: { classId: string; isAdmin: boolean
     setUploading(true);
     const path = `${classId}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
     const { error } = await supabase.storage.from("class-files").upload(path, file, { contentType: file.type });
-    if (error) { setUploading(false); return toast.error(error.message); }
+    if (error) { setUploading(false); return void toast.error(error.message); }
     const { error: e2 } = await supabase.from("files").insert({ class_id: classId, uploaded_by: userId, name: file.name, storage_path: path, size_bytes: file.size, mime_type: file.type });
     setUploading(false);
-    if (e2) { await supabase.storage.from("class-files").remove([path]); return toast.error(e2.message); }
+    if (e2) { await supabase.storage.from("class-files").remove([path]); return void toast.error(e2.message); }
     toast.success("File uploaded"); qc.invalidateQueries({ queryKey: ["files", classId] });
   };
   const download = async (path: string) => {
     const { data, error } = await supabase.storage.from("class-files").createSignedUrl(path, 60);
-    if (error || !data) return toast.error(error?.message ?? "Could not open file");
+    if (error || !data) return void toast.error(error?.message ?? "Could not open file");
     window.open(data.signedUrl, "_blank");
   };
   const remove = async (id: string, path: string) => {
     const { error } = await supabase.storage.from("class-files").remove([path]);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     await supabase.from("files").delete().eq("id", id);
     toast.success("File deleted"); qc.invalidateQueries({ queryKey: ["files", classId] });
   };
