@@ -43,7 +43,7 @@ function Notifications() {
       {!q.data?.length ? <Empty title="No notifications" text="Requests, approvals and new posts will appear here." /> : (
         <div className="divide-y rounded-2xl border bg-card">
           {q.data.map((n) => (
-            <Link key={n.id} to={n.link ?? "/dashboard"} onClick={() => markOne(n.id)} className="flex items-start gap-3 p-4 hover:bg-muted/50">
+            <Link key={n.id} to={(n.link ?? "/dashboard") as "/dashboard"} onClick={() => markOne(n.id)} className="flex items-start gap-3 p-4 hover:bg-muted/50">
               <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-primary"}`} />
               <div className="flex-1">
                 <div className="text-sm font-medium">{n.title}</div>
